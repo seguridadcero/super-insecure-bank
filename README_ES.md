@@ -1,4 +1,4 @@
-# Super Insecure Bank
+# Super Insecure Bank v2.0
 
 <img width="1047" height="817" alt="super_insecure_bank" src="super_insecure_bank.png" />
 

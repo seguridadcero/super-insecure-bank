@@ -1,4 +1,4 @@
-# Super Insecure Bank v1.0 — Walkthrough de Explotación
+# Super Insecure Bank v2.0 — Walkthrough de Explotación
 
 > [!WARNING]
 > Esta guía contiene spoilers completos de los laboratorios.  

@@ -1,4 +1,4 @@
-# Super Insecure Bank v1.0 — Exploitation Walkthrough
+# Super Insecure Bank v2.0 — Exploitation Walkthrough
 
 > [!WARNING]
 > This guide contains full spoilers for the labs.  

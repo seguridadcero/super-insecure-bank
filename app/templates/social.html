@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="social-shell">
+  <div class="social-top"><strong>SocialBook</strong><input placeholder="Search SocialBook" disabled><span>● ● ●</span></div>
+  <section class="social-cover">
+    <div class="cover-gradient"></div>
+    <div class="social-page-head">
+      <div class="social-avatar">SIB</div>
+      <div><h1>Super Insecure Bank Social</h1><p>Financial service · 18K followers</p></div>
+      <button class="follow-btn" type="button">Follow</button>
+    </div>
+  </section>
+  <div class="social-content">
+    <aside class="social-about"><h3>About</h3><p>We are listening to your feedback.</p><p class="muted">This is a static social media mockup for the lab.</p></aside>
+    <main class="social-feed">
+      <article class="social-post"><div class="post-head"><div class="mini-avatar">SIB</div><div><strong>Super Insecure Bank</strong><br><span class="muted">Customer stories · 2h</span></div></div><p>We are listening to your feedback. Tell us about your online banking experience.</p><div class="fake-actions"><span>Like</span><span>Comment</span><span>Share</span></div></article>
+      <article class="social-post"><h3>Comments</h3>{% for name, comment in comments %}<div class="fb-comment"><div class="comment-avatar">{{ name[0] }}</div><div class="comment-bubble"><strong>{{ name }}</strong><p>{{ comment }}</p><span class="muted">Like · Reply · {{ loop.index + 3 }}m</span></div></div>{% endfor %}</article>
+    </main>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+services:
+  super-insecure-bank:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    container_name: super-insecure-bank
+    ports:
+      - "5080:5080"
+      - "5443:5443"
+    environment:
+      - JWT_SECRET=trustno1
+      - DATABASE_PATH=/app/data/super_insecure_bank.db
+      # Optional: set this to print exact LAN URLs in the startup banner.
+      # - SIB_HOST_IP=192.168.1.122
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

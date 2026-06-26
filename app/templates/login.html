@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="auth-card">
+  <h1>Online Banking Login</h1>
+  <p class="muted">Access your Super Insecure Bank accounts.</p>
+  <div id="login-error" class="alert" style="display:none"></div>
+  <form id="login-form">
+    <label>Username</label><input name="username" placeholder="fernando.conislla" required>
+    <label>Password</label><input name="password" type="password" required>
+    <button class="btn primary" type="submit">Sign in</button>
+  </form>
+  <p><a href="/forgot-password">Forgot your password?</a></p>
+  <p><a href="/social" target="_blank" rel="noopener noreferrer">Follow us on social media</a></p>
+</div>
+<script>
+document.getElementById('login-form').addEventListener('submit', async function(event){
+  event.preventDefault();
+  const payload = {
+    username: this.querySelector('[name="username"]').value,
+    password: this.querySelector('[name="password"]').value
+  };
+  const response = await fetch('/api/login', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  });
+  const data = await response.json();
+  if(!response.ok){
+    const box = document.getElementById('login-error');
+    box.textContent = data.error || 'Invalid username or password';
+    box.style.display = 'block';
+    return;
+  }
+  window.location.href = data.redirect || '/accounts';
+});
+</script>
+{% endblock %}

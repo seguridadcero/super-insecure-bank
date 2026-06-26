@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Mock Mailbox</h1>
+<p class="muted">This mailbox is only a lab simulation. It does not send or receive real emails.</p>
+<div class="card">
+  <h2>{{ username }}</h2>
+  <div id="mailbox-messages"><p class="muted">Loading messages...</p></div>
+</div>
+<script>
+function esc(v){return String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+async function loadMailbox(){
+  const username = new URLSearchParams(window.location.search).get('username') || '';
+  const response = await fetch('/api/mailbox?username=' + encodeURIComponent(username));
+  const data = await response.json();
+  const target = document.getElementById('mailbox-messages');
+  if(!data.messages || !data.messages.length){ target.innerHTML = '<p>No messages.</p>'; return; }
+  target.innerHTML = data.messages.map(m => {
+    if(m.is_password_reset){
+      return `<div class="mail"><h3>${esc(m.subject)}</h3><p class="muted">${esc((m.created_at || '').slice(0,16).replace('T',' '))}</p><p>A password reset request was generated for your account.</p><a class="btn primary" href="${esc(m.body)}" target="_blank" rel="noopener noreferrer">Open password reset link</a></div>`;
+    }
+    return `<div class="mail"><h3>${esc(m.subject)}</h3><p class="muted">${esc((m.created_at || '').slice(0,16).replace('T',' '))}</p><p>${esc(m.body)}</p></div>`;
+  }).join('');
+}
+document.addEventListener('DOMContentLoaded', loadMailbox);
+</script>
+{% endblock %}

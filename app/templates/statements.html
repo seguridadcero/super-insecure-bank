@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Account Statements</h1>
+<p class="muted">Monthly PDF statements are available for each account.</p>
+<section id="statements-grid" class="grid two"><p class="muted">Loading accounts...</p></section>
+<script>
+function escapeHtml(value){
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+function prettyStatementName(file){
+  const m = String(file).match(/statement_(\d+)_(\d{2})(\d{4})\.pdf/);
+  if(!m) return file;
+  const date = new Date(Number(m[3]), Number(m[2])-1, 1);
+  return date.toLocaleString('en-US', {month:'long', year:'numeric'}) + ' Statement';
+}
+async function loadStatementsFor(button){
+  const card = button.closest('.statement-card');
+  const accountId = button.dataset.account;
+  const target = card.querySelector('.statement-items');
+  target.innerHTML = '<p class="muted">Loading statements...</p>';
+
+  const response = await fetch('/api/statements/accounts/' + encodeURIComponent(accountId));
+  const data = await response.json();
+
+  if(!response.ok){
+    target.innerHTML = '<div class="alert">' + escapeHtml(data.error || 'Unable to load statements.') + '</div>';
+    return;
+  }
+
+  const files = data.files || [];
+  if(!files.length){
+    target.innerHTML = '<p class="muted">No statements found.</p>';
+    return;
+  }
+
+  target.innerHTML = files.map(f => {
+    if(String(f).endsWith('.pdf')){
+      const href = '/statements/download?filename=' + encodeURIComponent(accountId + '/' + f);
+      return `
+        <div class="statement-row">
+          <div><strong>${escapeHtml(prettyStatementName(f))}</strong><br><span class="muted">PDF document</span></div>
+          <a class="btn" href="${href}">Download</a>
+        </div>`;
+    }
+    return `
+      <div class="statement-row anomaly">
+        <div><strong>Command output</strong><br><code>${escapeHtml(f)}</code></div>
+      </div>`;
+  }).join('');
+}
+async function loadAccounts(){
+  const response = await fetch('/api/accounts');
+  const data = await response.json();
+  const grid = document.getElementById('statements-grid');
+  grid.innerHTML = data.accounts.map(a => `
+    <div class="card statement-card" data-account="${a.account_number}">
+      <h2>${a.account_type} Account ${a.account_number}</h2>
+      <p class="muted">Click the button to load monthly PDF statements for this account.</p>
+      <button class="btn primary load-statements" data-account="${a.account_number}" onclick="loadStatementsFor(this)">Load statements</button>
+      <div class="statement-items" style="margin-top:16px">
+        <p class="muted">Statements not loaded yet.</p>
+      </div>
+    </div>`).join('');
+}
+document.addEventListener('DOMContentLoaded', loadAccounts);
+</script>
+{% endblock %}

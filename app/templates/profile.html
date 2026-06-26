@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Customer Profile</h1>
+<div id="profile-message" class="success" style="display:none"></div>
+<div class="card profile-card">
+  <form id="kyc-form">
+    <div class="form-grid">
+      <div><label>Name</label><input id="full-name" disabled></div>
+      <div><label>Email</label><input id="email" disabled></div>
+      <div><label>Username</label><input id="username" disabled></div>
+      <div><label>OTP Phone</label><input id="otp-phone-display" disabled></div>
+      <div><label>Address</label><input name="address"></div>
+      <div><label>Occupation</label><input name="occupation"></div>
+      <div><label>Monthly income</label><input name="monthly_income"></div>
+      <div><label>Source of funds</label><input name="source_of_funds"></div>
+    </div>
+    <button class="btn primary" type="submit">Update customer profile</button>
+  </form>
+</div>
+<script>
+async function loadProfile(){
+  const response = await fetch('/api/customer-profile');
+  const data = await response.json();
+  document.getElementById('full-name').value = data.full_name;
+  document.getElementById('email').value = data.email;
+  document.getElementById('username').value = data.username;
+  document.getElementById('otp-phone-display').value = data.otp_phone;
+  document.querySelector('[name="address"]').value = data.address;
+  document.querySelector('[name="occupation"]').value = data.occupation;
+  document.querySelector('[name="monthly_income"]').value = data.monthly_income;
+  document.querySelector('[name="source_of_funds"]').value = data.source_of_funds;
+}
+document.getElementById('kyc-form').addEventListener('submit', async function(event){
+  event.preventDefault();
+  const payload = {
+    address: this.querySelector('[name="address"]').value,
+    occupation: this.querySelector('[name="occupation"]').value,
+    monthly_income: this.querySelector('[name="monthly_income"]').value,
+    source_of_funds: this.querySelector('[name="source_of_funds"]').value
+  };
+  const response = await fetch('/api/profile/kyc/update', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  });
+  const data = await response.json();
+  const box = document.getElementById('profile-message');
+  box.style.display = 'block';
+  box.textContent = data.message || data.error || 'Customer profile updated successfully.';
+  if(data.profile && data.profile.otp_phone){
+    document.getElementById('otp-phone-display').value = data.profile.otp_phone;
+  }
+});
+document.addEventListener('DOMContentLoaded', loadProfile);
+</script>
+{% endblock %}

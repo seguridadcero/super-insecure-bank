@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>New transfer</h1>
+<div id="transfer-message" class="success" style="display:none"></div>
+<div id="transfer-error" class="alert" style="display:none"></div>
+<section id="transfer-form-view">
+<div class="card">
+  <form id="transfer-form">
+    <label>From account</label>
+    <select name="from_account" id="from-account"><option>Loading accounts...</option></select>
+    <label>To account</label>
+    <input name="to_account" placeholder="2002" required>
+    <label>Amount</label>
+    <input name="amount" placeholder="10.00" required>
+    <label>Payment reference</label>
+    <input name="note" placeholder="Dinner reimbursement">
+    <button class="btn primary" type="submit">Transfer</button>
+  </form>
+  <p class="muted">Known recipients: Alice 2002/2005, Bob 3003/3006.</p>
+</div>
+</section>
+<section id="transfer-result-view" style="display:none">
+<div id="transfer-result" class="card receipt">
+  <h2 id="receipt-title">Receipt</h2>
+  <p><strong>Transfer ID:</strong> <span id="receipt-transfer-id"></span></p>
+  <p><strong>From:</strong> <span id="receipt-from"></span></p>
+  <p><strong>To:</strong> <span id="receipt-to"></span></p>
+  <p><strong>Amount shown on receipt:</strong> <span id="receipt-amount"></span></p>
+  <p><strong>Status:</strong> <span id="receipt-status-value"></span></p>
+  <p><strong>Payment reference:</strong> <span id="receipt-payment-reference"></span></p>
+  <hr>
+  <p class="muted">Original transfer amount in database: <span id="receipt-original-amount"></span></p>
+  <p><button id="make-another-transfer" class="btn secondary" type="button">Make another transfer</button></p>
+</div>
+</section>
+<script>
+async function loadTransferAccounts(){
+  const response = await fetch('/api/accounts');
+  const data = await response.json();
+  const select = document.getElementById('from-account');
+  select.innerHTML = data.accounts.map(a => `<option value="${a.account_number}">${a.account_number} — ${a.account_type} — ${a.balance} ${a.currency}</option>`).join('');
+}
+document.getElementById('transfer-form').addEventListener('submit', async function(event){
+  event.preventDefault();
+  document.getElementById('transfer-error').style.display = 'none';
+  const payload = {
+    from_account: this.querySelector('[name="from_account"]').value,
+    to_account: this.querySelector('[name="to_account"]').value,
+    amount: this.querySelector('[name="amount"]').value,
+    note: this.querySelector('[name="note"]').value
+  };
+  const response = await fetch('/api/transfers/create', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  });
+  const data = await response.json();
+  if(!response.ok){
+    const box = document.getElementById('transfer-error');
+    box.textContent = data.error || 'Transfer could not be completed.';
+    box.style.display = 'block';
+    return;
+  }
+  const t = data.transfer;
+  document.getElementById('transfer-form-view').style.display = 'none';
+  document.getElementById('transfer-result-view').style.display = 'block';
+  const receiptResponse = await fetch('/api/receipts/generate', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      transfer_id: t.id,
+      from_account: t.from_account,
+      to_account: t.to_account,
+      amount: t.amount,
+      currency: t.currency,
+      status: t.status,
+      payment_reference: t.payment_reference
+    })
+  });
+  const receiptData = await receiptResponse.json();
+  const r = receiptData.receipt;
+  document.getElementById('receipt-title').textContent = `Receipt ${r.receipt_id}`;
+  document.getElementById('receipt-transfer-id').textContent = r.transfer_id;
+  document.getElementById('receipt-from').textContent = r.from_account;
+  document.getElementById('receipt-to').textContent = r.to_account;
+  document.getElementById('receipt-amount').textContent = `${r.amount} ${r.currency}`;
+  document.getElementById('receipt-status-value').textContent = r.status;
+  document.getElementById('receipt-payment-reference').innerHTML = r.payment_reference || 'Online transfer';
+  document.getElementById('receipt-original-amount').textContent = `${receiptData.original_transfer_amount} ${r.currency}`;
+});
+
+document.getElementById('make-another-transfer').addEventListener('click', function(){
+  document.getElementById('transfer-result-view').style.display = 'none';
+  document.getElementById('transfer-form-view').style.display = 'block';
+  document.getElementById('transfer-form').reset();
+  document.getElementById('transfer-error').style.display = 'none';
+  document.getElementById('receipt-title').textContent = 'Receipt';
+  document.getElementById('receipt-transfer-id').textContent = '';
+  document.getElementById('receipt-from').textContent = '';
+  document.getElementById('receipt-to').textContent = '';
+  document.getElementById('receipt-amount').textContent = '';
+  document.getElementById('receipt-status-value').textContent = '';
+  document.getElementById('receipt-payment-reference').textContent = '';
+  document.getElementById('receipt-original-amount').textContent = '';
+});
+document.addEventListener('DOMContentLoaded', loadTransferAccounts);
+</script>
+{% endblock %}

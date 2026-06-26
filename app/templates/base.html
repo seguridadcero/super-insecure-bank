@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title or 'Super Insecure Bank' }}</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="subsystem-{{ subsystem }}">
+<header class="topbar topbar-{{ subsystem }}">
+  <div>
+    <div class="brand"><a href="/">Super Insecure Bank</a></div>
+    <div class="subsystem-label">{{ subsystem_name }}</div>
+  </div>
+  <nav>
+    {% if subsystem == 'lab' %}
+      {# lab welcome page uses in-page actions instead of a top navigation menu #}
+    {% elif subsystem == 'mail' %}
+      <a href="/mailbox?username=fernando.conislla">Fernando Mailbox</a>
+    {% elif subsystem == 'logs' %}
+      <a href="/security-dashboard">Refresh Logs</a>
+    {% elif subsystem == 'social' %}
+      {# no global menu in the social mockup #}
+    {% else %}
+      {% if show_banking_nav %}
+        <a href="/accounts">Accounts</a>
+        <a href="/transfers">Transfers</a>
+        <a href="/statements">Statements</a>
+        <a href="/profile">Profile</a>
+        <a href="/loans">Loans</a>
+        <a href="/logout">Logout</a>
+      {% endif %}
+    {% endif %}
+  </nav>
+</header>
+<main class="container">
+  {% block content %}{% endblock %}
+</main>
+<footer class="footer footer-{{ subsystem }}">
+  Super Insecure Bank is an intentionally vulnerable web application created by
+  <a href="https://www.linkedin.com/in/fernando-conislla-murguia/" target="_blank" rel="noopener noreferrer">Fernando Conislla</a>
+  for educational purposes.
+      <br>
+      Removing these credits may result in your bank account being mysteriously hacked.
+</footer>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+{% if error %}
+<h1>Receipt not found</h1>
+<div class="card"><p>{{ error }}</p><a class="btn secondary" href="/accounts">Back to accounts</a></div>
+{% else %}
+<h1>Receipt {{ receipt.receipt_id }}</h1>
+<div class="card receipt">
+  <p><strong>Transfer ID:</strong> {{ receipt.transfer_id }}</p>
+  <p><strong>From:</strong> {{ receipt.from_account }}</p>
+  <p><strong>To:</strong> {{ receipt.to_account }}</p>
+  <p><strong>Amount shown on receipt:</strong> {{ receipt.amount }} {{ receipt.currency }}</p>
+  <p><strong>Status:</strong> {{ receipt.status }}</p>
+  {% if transfer %}<p><strong>Payment reference:</strong> {{ transfer.description|safe }}</p><hr><p class="muted">Original transfer amount in database: {{ '%.2f'|format(transfer.amount) }} {{ transfer.currency }}</p>{% endif %}
+  <p><a class="btn secondary" href="/accounts">Back to accounts</a></p>
+</div>
+{% endif %}
+{% endblock %}

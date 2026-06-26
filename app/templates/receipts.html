@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Receipts</h1>
+<div class="card">
+  <h2>Transfer receipts</h2>
+  <p class="muted">Your transfer receipts will appear here after each approved transfer.</p>
+  <div id="receipts-list"><p class="muted">Loading receipts...</p></div>
+</div>
+<script>
+function esc(v){return String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+async function loadReceipts(){
+  const response = await fetch('/api/receipts');
+  const data = await response.json();
+  const target = document.getElementById('receipts-list');
+  const receipts = data.receipts || [];
+  if(!receipts.length){ target.innerHTML = '<p class="muted empty-state">No receipts available yet.</p>'; return; }
+  target.innerHTML = `<div class="transaction-list">${receipts.map(r => `<div class="transaction-row"><a class="receipt-link" href="/receipts/${encodeURIComponent(r.receipt_id)}">View receipt</a><div class="transaction-main"><strong>${esc(r.receipt_id)}</strong><span class="muted">Transfer ${esc(r.transfer_id)} · ${esc(r.from_account)} → ${esc(r.to_account)}</span><span class="muted">${esc((r.created_at || '').slice(0,16).replace('T',' '))}</span></div><div class="transaction-amount">${esc(r.amount)} ${esc(r.currency)}</div></div>`).join('')}</div>`;
+}
+document.addEventListener('DOMContentLoaded', loadReceipts);
+</script>
+{% endblock %}

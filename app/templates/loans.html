@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Loans</h1>
+<div id="loan-message" class="success" style="display:none"></div>
+<div id="loan-error" class="alert" style="display:none"></div>
+<div class="card">
+  <h2>Personal Loan Applications</h2>
+  <p>Online loan applications are temporarily unavailable for your account. Please visit a branch office to enable this feature.</p>
+
+  <form id="loan-application-form" style="display:none;">
+    <label for="account_id">Source account</label>
+    <select id="account_id" name="account_id"></select>
+
+    <label for="amount">Loan amount</label>
+    <input id="amount" type="number" name="amount" value="5000" min="1000" step="100">
+
+    <label for="term_months">Term</label>
+    <select id="term_months" name="term_months">
+      <option value="12">12 months</option>
+      <option value="24">24 months</option>
+      <option value="36">36 months</option>
+    </select>
+
+    <label for="purpose">Purpose</label>
+    <input id="purpose" type="text" name="purpose" value="Personal expenses">
+
+    <button class="btn primary" type="submit">Submit loan application</button>
+  </form>
+</div>
+<div class="card">
+  <h2>Submitted loan applications</h2>
+  <div id="loan-applications"><p class="muted">Loading applications...</p></div>
+</div>
+<script>
+async function loadLoanAccounts(){
+  const response = await fetch('/api/accounts');
+  const data = await response.json();
+  document.getElementById('account_id').innerHTML = data.accounts.map(a => `<option value="${a.account_number}">${a.account_number} — ${a.account_type}</option>`).join('');
+}
+function renderLoans(items){
+  const target = document.getElementById('loan-applications');
+  if(!items.length){ target.innerHTML = '<p class="muted empty-state">No loan applications submitted yet.</p>'; return; }
+  target.innerHTML = items.map(l => `<div class="transaction-row"><div class="transaction-main"><strong>${l.id}</strong><span class="muted">Account ${l.account_id} · ${l.term_months} months · ${l.purpose}</span><span class="muted">${(l.created_at || '').slice(0,16).replace('T',' ')}</span></div><div class="transaction-amount credit">${l.amount} ${l.currency}<br><span class="muted">${l.status}</span></div></div>`).join('');
+}
+async function loadLoanApplications(){
+  const response = await fetch('/api/loans/applications');
+  const data = await response.json();
+  renderLoans(data.applications || []);
+}
+document.getElementById('loan-application-form').addEventListener('submit', async function(event){
+  event.preventDefault();
+  const payload = {
+    account_id: this.querySelector('[name="account_id"]').value,
+    amount: this.querySelector('[name="amount"]').value,
+    term_months: this.querySelector('[name="term_months"]').value,
+    purpose: this.querySelector('[name="purpose"]').value
+  };
+  const response = await fetch('/api/loans/apply', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  });
+  const data = await response.json();
+  const msg = document.getElementById(response.ok ? 'loan-message' : 'loan-error');
+  msg.textContent = data.message || data.error || 'Loan request processed.';
+  msg.style.display = 'block';
+  if(response.ok){ await loadLoanApplications(); }
+});
+document.addEventListener('DOMContentLoaded', async () => { await loadLoanAccounts(); await loadLoanApplications(); });
+</script>
+{% endblock %}

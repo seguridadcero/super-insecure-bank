@@ -2,9 +2,7 @@
 
 <img width="1047" height="817" alt="super_insecure_bank" src="super_insecure_bank.png" />
 
-**Super Insecure Bank** es una aplicación web bancaria intencionalmente vulnerable, creada por **Fernando Conislla** con fines educativos.
-
-El laboratorio está diseñado para practicar identificación, explotación y análisis de vulnerabilidades web modernas alineadas con **OWASP Top 10:2025**.
+**Super Insecure Bank** es una aplicación web bancaria intencionalmente vulnerable diseñada para practicar identificación, explotación y análisis de vulnerabilidades web modernas alineadas con **OWASP Top 10:2025**.
 
 Simula funciones típicas de banca digital como autenticación, consulta de cuentas, transferencias, estados de cuenta, restablecimiento de contraseña, recibos, logs de seguridad y servicios internos expuestos.
 
